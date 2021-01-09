@@ -197,10 +197,15 @@ font-weight: bold;
 /* } */
 
 .center{
-	margin-top: 3rem;
+	margin-top: 1rem;
+	margin-bottom: 1rem;
 	display: flex;
 	justify-content: center;
 
+}
+#Str{
+	margin-bottom: 0;
+	margin-top: 1rem;
 }
 label{
  font-weight: bold;

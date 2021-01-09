@@ -1,7 +1,8 @@
 export function initScene(engine, canvas) {
     var scene = new BABYLON.Scene(engine);
-
-    var camera = new BABYLON.ArcRotateCamera("camera", Math.PI/5.3, Math.PI/1.8, 75, new BABYLON.Vector3(0, 10, 0), scene);
+    //first Math.PI/5.3
+    //second Math.PI/1.8
+    var camera = new BABYLON.ArcRotateCamera("camera", Math.PI/5.3, Math.PI/3, 75, new BABYLON.Vector3(0, 10, 0), scene);
     
     camera.attachControl(canvas, true);
 
@@ -30,10 +31,8 @@ export function initScene(engine, canvas) {
 export function changeColoroMatt(scene, color) {
 
     var mat = new BABYLON.StandardMaterial("mat1", scene);
-    // var mat = test1(scene)
     mat.alpha = 1.0;
     mat.diffuseColor = new BABYLON.Color3.FromHexString(color)
-    // mat.diffuseColor = new BABYLON.Color3(0.5, 0.5, 1.0);
     mat.backFaceCulling = false;
     mat.wireframe = false;
     return mat;
