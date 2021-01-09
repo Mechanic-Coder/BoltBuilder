@@ -14,7 +14,7 @@ h1{
 	text-align: center;
 	font-family: impact;
 	font-size: 3rem;
-	margin: 2rem
+	margin: 1rem
 	
 }
 #main {
@@ -48,7 +48,7 @@ h1{
 .space{
 	display: flex;
 	flex-direction: column;
-	margin: .5rem;
+	margin: .1rem;
 	width: 15rem;
 }
 .matbtn{
@@ -64,8 +64,8 @@ background-color:#f44201;
 }
 .btnShape {
 	width: 20rem;
-height: 2.5rem;
-margin: .5rem;
+height: 2rem;
+margin: .25rem;
 border-radius: .5rem;
 font-size: 1.5rem;
 font-weight: bold;
@@ -173,7 +173,7 @@ font-weight: bold;
 	margin: 0;
 	border-radius: 1rem;
 	padding-bottom: 2rem;
-	padding-top: 2rem;
+	padding-top: 1rem;
 	background-color: #ffffff9c;
 }
 
@@ -210,8 +210,8 @@ label{
 h2{
 	text-align: center;
 	font-size: 2.2rem;
-	margin-top: 1rem;
-	margin-bottom: 1rem;
+	margin-top: .25rem;
+	margin-bottom: .5rem;
 }
 
 button{
