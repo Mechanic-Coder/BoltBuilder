@@ -1,0 +1,487 @@
+
+
+  <!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+        <title>Babylon Template</title>
+        <style>
+
+
+        </style>
+        <script src="https://cdn.babylonjs.com/babylon.js"></script>
+        <script src="https://cdn.babylonjs.com/loaders/babylonjs.loaders.min.js"></script>
+        <script src="https://code.jquery.com/pep/0.4.3/pep.js"></script>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+
+        <!-- earcut script critcal for PolygonMeshBuilder -->
+        <script src="https://unpkg.com/earcut@2.1.1/dist/earcut.min.js"></script>
+        <link rel="stylesheet" href="statusBar.css">
+        <!-- <script type="module" src="./equationHelper.js"></script> -->
+    </head>
+   <body>
+    <div id="main">
+      
+      <div id="container">
+      <canvas id="renderCanvas" touch-action="none"></canvas> <!-- touch-action="none" for best results from PEP -->
+        <div id="overlaytext">Scroll To Zoom</div>
+
+      <div class="arrow" id="overlayleft">
+          <svg xmlns="http://www.w3.org/2000/svg" width="60" height="60" fill="currentColor" class="bi bi-caret-left-fill" viewBox="0 0 16 16">
+          <path d="M3.86 8.753l5.482 4.796c.646.566 1.658.106 1.658-.753V3.204a1 1 0 0 0-1.659-.753l-5.48 4.796a1 1 0 0 0 0 1.506z"/>
+        </svg> 
+      </div>
+      <div class="arrow" id="overlayTop">
+        <svg xmlns="http://www.w3.org/2000/svg" width="60" height="60" fill="currentColor" class="bi bi-caret-up-fill" viewBox="0 0 16 16">
+          <path d="M7.247 4.86l-4.796 5.481c-.566.647-.106 1.659.753 1.659h9.592a1 1 0 0 0 .753-1.659l-4.796-5.48a1 1 0 0 0-1.506 0z"/>
+        </svg>
+      </div>
+      <div class="arrow" id="overlayRight">
+        <svg xmlns="http://www.w3.org/2000/svg" width="60" height="60" fill="currentColor" class="bi bi-caret-right-fill" viewBox="0 0 16 16">
+          <path d="M12.14 8.753l-5.482 4.796c-.646.566-1.658.106-1.658-.753V3.204a1 1 0 0 1 1.659-.753l5.48 4.796a1 1 0 0 1 0 1.506z"/>
+        </svg>
+      </div>
+      <div class="arrow"  id="overlayBottom">
+        <svg xmlns="http://www.w3.org/2000/svg" width="60" height="60" fill="currentColor" class="bi bi-caret-down-fill" viewBox="0 0 16 16">
+          <path  d="M7.247 11.14L2.451 5.658C1.885 5.013 2.345 4 3.204 4h9.592a1 1 0 0 1 .753 1.659l-4.796 5.48a1 1 0 0 1-1.506 0z"/>
+        </svg>
+      </div>
+
+      </div>
+      
+      
+      <div id="first">
+        <div id="second " >
+          <h1> Bolt Builder </h1>
+          <div class="card">
+            <div class="mids">
+              <div class="mid">
+                <div class="space">
+                  <label>Outer Diameter:</label><input type="number" id="major">
+                </div>
+                <div class="space">
+                  <label> Pitch:</label><input type="number" id="pitch">
+                </div>
+                <div class="space">
+                  <label> Length: </label><input type="number" id="length">
+                </div>
+              </div>
+            </div>
+    
+            <div class="btnHolder">
+              
+              <div id="Matts">
+                <h2> Material Options</h2>  
+              </div>
+            </div>
+          
+  
+  
+          
+          <!-- <p id="Str">  </p> -->
+          <h2> Tensile Strength</h2>
+          
+        <div id="progress-bar-container">
+            <div class="progress-bar-child progress"></div>
+            <div id='dec' class="progress-bar-child shrinker timelapse"></div>
+        </div>
+        <p id="Str">  </p>
+      </div>
+        <div class="center">
+          <button type='button' class="updatebtn" id="Updatebtn">
+            <svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" fill="currentColor" class="bi bi-arrow-clockwise" viewBox="0 0 16 16">
+              <path fill-rule="evenodd" d="M8 3a5 5 0 1 0 4.546 2.914.5.5 0 0 1 .908-.417A6 6 0 1 1 8 2v1z"/>
+              <path d="M8 4.466V.534a.25.25 0 0 1 .41-.192l2.36 1.966c.12.1.12.284 0 .384L8.41 4.658A.25.25 0 0 1 8 4.466z"/>
+            </svg>
+            <div>Update Display</div>          
+          </button>
+        </div>
+        </div>
+      </div>
+    </div>
+
+
+    <script type="module">
+    // things to add
+    // about project readme page
+    //! DONT think ill do now.  make mtt transtion smoother dont refresh whole page
+      import { initScene, changeColor } from "./babylonBoiler.js"
+      import { updateGlobal, MathConst } from "./globalClass.js"
+      import { materials, BoltEQ } from "./engineCalc.js"
+      const Matts = materials
+      const helperConst = new MathConst()
+      var DefMat = 0
+      var GDims = new updateGlobal(12, 1, 2, Matts[DefMat].color)
+      const canvas = document.getElementById("renderCanvas"); // Get the canvas element
+      const engine = new BABYLON.Engine(canvas, true); // Generate the BABYLON 3D engine
+      // var topics = Matts
+    
+    $(document).ready(function(){
+
+      for (var i = 0; i < Matts.length; i++) { 
+        var buttons = $(`<button class="matbtn btnShape" id="mat${i}" > ${Matts[i].name}</button>`)
+        buttons.appendTo('#Matts'); 
+        $('#mat' + i).click(
+          changeMatCallback( i )
+         )   
+      }    
+      
+      $("#major").val(GDims.Gmajor)
+      $("#pitch").val(GDims.Gpitch)
+      $("#length").val(GDims.Glength)
+      $('#Updatebtn').click(()=>{
+        updatemat(DefMat)
+        displ()
+
+
+      })
+
+      $('#GMat').change(function(){ 
+        updateGlobalParams()
+        updateCalcs(DefMat)
+        displ()
+      });
+      updateCalcs(DefMat)
+      
+    });
+    var curvePoints = ( r, o) => {
+      
+      // ////// this is wrong the end is proper but the start needs to have the bottom aka e
+      //  fade in rather then the angle and depth fade in 
+      // 
+      // o is the y offset
+      // r is the x off set
+      var k = 0;
+
+      const D = threadGeo(GDims.Gpitch).d
+      const startincrement = 1 / 126
+      const pitch = GDims.Gpitch 
+      
+      var path = [];
+      var highY = 0
+      var increaseX = 0
+      var startOffset = 0
+      var DecX = D * helperConst.TE()
+
+      for (var i = 0; i < GDims.PieHalfRevs() ; i += helperConst.Clarity()   ) {
+        // reset for each itteration
+        var xOffset = r
+        var y = 0
+        // eases into first thread revolution, bottom
+        // const HalfRevs =  2 * tpi * length
+        const firstRev = i < 2 * Math.PI && o < 2;
+        const lastRev =  i > GDims.Highest()  && o > 0;
+        if(firstRev) {
+
+          switch(o) {
+            case 1:
+              y = (i + (2 - startOffset) * Math.PI) / pitch 
+              DecX -= (D  / 126) * helperConst.TE()
+              
+              xOffset = r + DecX
+              startOffset += startincrement
+              break;
+            case 0:
+              y = ( 2 * Math.PI) / pitch
+              break;
+            default:
+          }
+
+          path.push( createVector3(xOffset, y, xOffset, i) );
+  //  ///////////////////////////////////////////////////////////////////////////////
+  //  eases out of last thread revolution, top
+} else if(lastRev) {
+          switch(o) {
+          case 1:
+            highY += 1 / 125
+            //!  D * 4 is because i exgerated the pitch in the V.X cordinate by 4
+            increaseX += (D * helperConst.TE() / 125)
+            // const highest = (HalfRevs - 2) * Math.PI
+            y = ((GDims.Highest() + (o + highY) * Math.PI) / pitch)
+            xOffset = r + increaseX
+            break;
+          case 2:
+            y = ((GDims.Highest() + o * Math.PI) / pitch)
+            break;
+          default:
+          }
+          path.push(createVector3(xOffset, y, xOffset, i))
+      } else {
+        // for top triggers on 0, for bottom triggers on 2
+        path.push(createVector3(r, (i + o * Math.PI) / pitch, r, i))
+      }
+        // just a counter
+        k++;
+      }
+        return path;
+    };
+    var createScene = () => {
+
+      // 1 change
+      var AllScene = initScene(engine, canvas)
+      
+
+      var scene = AllScene.scene
+      var mat = changeColor(scene, GDims.GMat)
+
+     
+
+      createThread(mat, scene)
+      makeDisc(mat, GDims.Rad() * .9, GDims.BottomOfChamfer() , helperConst.RotTop())
+      makeDisc(mat, GDims.Rad() , GDims.TopOfThread(), helperConst.RotTop())
+      BottomChamfer(mat, scene)
+      createHead(mat, scene)
+
+      return scene;
+      };
+      displ()
+    function changebtnCss(i) {
+      // const one = Matts.filter(x => x)
+        for(var t in Matts ) {
+          console.log(t)
+          if(t == i) {
+            $('#mat' + t).removeClass('matbtn')
+          $('#mat' + t).addClass("MatClicked");
+          } else {
+            $('#mat' + t).removeClass("MatClicked");
+            $('#mat' + t).addClass('matbtn')
+          // $('#mat' + t).removeClass("blue");
+          }
+        }
+
+
+    }
+    function changeMatCallback( i ){
+        return function(){
+          changebtnCss(i)
+          
+          updatemat(i)
+        }
+      }
+    function updatemat(i) {
+        DefMat = i
+        updateGlobalParams()
+        const Mat = Matts[i].color
+        GDims = new updateGlobal(GDims.Gpitch, GDims.Gmajor, GDims.Glength, Mat)
+        updateCalcs(i)
+        displ()
+    }
+    function updateCalcs(i) {
+      const Boltprop = new BoltEQ(GDims.Gmajor, GDims.Gpitch, Matts[i].uts)
+      console.log(Boltprop)
+      updateStrengthBar(Boltprop.MaxLoad())
+    }
+    function updateStrengthBar(Strength) {
+      $('#Str').html(Strength + ' psi');
+      var elem = document.getElementById('dec');        
+      var unit =  Strength / 30000;
+      var perc = 100 -  unit * 10
+      if(unit * 10 > 100) {
+        perc = 0
+      }  
+      elem.style.width = perc + '%';
+    }
+    function updateGlobalParams() {
+          // max dia 15
+    // max length 25
+    // min pitch 2
+    // any dia under 1 can have a min pitch of 10
+      const Gmajor = $("#major").val()
+      const Gpitch = $("#pitch").val()
+      // if pitch is less then 5 length >= 1
+      const Glength = $("#length").val()
+      if(Gmajor > 15) {
+        alert('outer diameter may not exceed 15 inches')
+      }
+      else if(Gpitch < 2) {
+        alert('Pitch may not be less then 2')
+      }
+      else if(Glength > 25) {
+        alert('length may not exceed 25')
+      }
+      else if(Gmajor < 1 && Gpitch < 10) {
+        alert('when pitch is less then 10 the outer diameter must be greater then 1  ')
+      }
+
+      else if(Gmajor > 0 && Gpitch > 0 && Glength > 0) {
+        GDims = new updateGlobal(Gpitch, Gmajor, Glength, GDims.GMat)
+      } else {
+        alert('all field need to be filled')
+      }
+      console.log(GDims)
+
+      
+      // displ()
+    }
+
+
+  
+  
+    function threadGeo(TPI) {
+        const Angle = 30;
+        const P = 1 / TPI;
+        const pieHalf = (Math.PI/180)
+        const d = P * Math.cos((Angle*pieHalf));
+        return {P:P, d:d}
+      }
+    function createProfile(TPI, Major, length) {
+
+      const thread = threadGeo(TPI)
+
+      var a = thread.P/2;
+      // X: S.X - d * 4 is just to pronounce threads normaly it would just be X: S.X - d
+      var S = {X:Major/2,
+              Y: 0}
+      var V = {X: S.X - thread.d * helperConst.TE(), 
+              Y: S.Y + a }
+      var E = {X: S.X, 
+              Y:  S.Y + thread.P }
+    return { S, V, E, length, TPI }
+    }
+
+
+    function createVector3(x, y, z, i) {
+      return new BABYLON.Vector3(x * Math.sin(i), y, z * Math.cos(i))
+    }
+
+
+  function createThread(mat, scene) {
+    const profile = createProfile(GDims.Gpitch, GDims.GMAJ(), GDims.Glength)
+
+    var curve1 = curvePoints(profile.S.X, 0);
+    var curve2 = curvePoints(profile.V.X, 1);
+    var curve3 = curvePoints(profile.E.X, 2);
+    
+    var thread = BABYLON.MeshBuilder.CreateRibbon("t", {
+      pathArray: [curve1, curve2, curve3]}, scene);
+    thread.material = mat;
+  }
+  function BottomChamfer(mat, scene) {
+    // i would like to make thread cut into chamfer perhaps
+    // do a three point ribbon and only alter the middle one one thread makes contacts
+    const top = GDims.Rad();
+    const bottom = GDims.Rad() * .9;
+    var topPoints = drawCircle(top,  GDims.BottomOfThread())
+    var bottomPoints = drawCircle(bottom,  GDims.BottomOfChamfer())
+    var chamfer = BABYLON.MeshBuilder.CreateRibbon("t", {pathArray: 
+      [topPoints, bottomPoints]}, scene);
+    chamfer.material = mat;
+  }
+  function createHead(mat, scene) {
+    // flats are 1.5 bigger then major
+    // G aka the dots are roughly 1.7 greater then major
+
+    const headRad = (GDims.GMAJ() * 1.7) /2
+    // B is the distance from bottom of bolt to start of head
+    const B = GDims.TopOfThread()
+    // head  width is 1/2 of major
+    const WholeT = (B + GDims.Rad())
+    const scr = WholeT - B;
+    const NewT = scr * .85;
+    const T = B + (scr * .9);
+    const chamf =   T - scr * .1  
+    Sides(mat, scene ,headRad, T, B)
+    assignFace(B, mat, headRad)
+    // first cilcle then hex
+    roof(mat, scene ,headRad, chamf, T)
+  }
+  function makeDisc(mat, rad, y, orientation) {
+    const disc = BABYLON.MeshBuilder.CreateDisc("disc", {radius: rad});
+    disc.rotation.x  =  orientation;
+    disc.position.y += y
+    disc.material = mat;
+  }
+  function roof(mat, scene ,od, C, H) {
+  makeDisc(mat, od * .8, (H - C) + H, helperConst.RotTop())
+  var TC = DrawTopChamfer(od * .8 ,  C )
+  var BC = DrawTthroughcos(od , H )
+  var hex = BABYLON.MeshBuilder.CreateRibbon("t", {pathArray: [ TC, BC]}, scene);
+  hex.rotation.x  =  Math.PI
+  hex.position.y = H * 2
+  hex.material = mat;
+  }
+  function DrawTthroughcos(od , y) {
+    // plots dots allong hexagons  lines 
+    // this was tricky
+    var path = [];
+    var r = od ;
+    // y = 40
+    // keep below woked
+    // const top = Math.sqrt(3)*r 
+    // const bot = Math.sqrt(3)*Math.cos(t) + Math.sin(t)
+    // const d = top / bot
+    // const d = (Math.sqrt(3)*r )/ (Math.sqrt(3)*Math.cos(t) + Math.sin(t))
+    
+    var d = 0
+    // rad is how many degrees are in each segment of polygon hexagon is 60 deg
+    const rad = 60 * Math.PI/180
+    for (var i = 0; i <= Math.PI * 2 + Math.PI / 60   ; i += Math.PI / 60   ) {
+
+      var t = i % rad
+      d = (Math.sqrt(3)*r )/ (Math.sqrt(3)*Math.cos(t) + Math.sin(t))
+      path.push( new BABYLON.Vector3(d * Math.sin(i), y, d * Math.cos(i)));
+    }
+    return path;
+  }
+  function DrawTopChamfer(od, y) {
+    var path = [];
+        for (  var i = 0; i <= Math.PI * 2 + Math.PI / 60   ; i += Math.PI / 60) {
+      path.push( new BABYLON.Vector3(od * Math.sin(i), y, od * Math.cos(i))); 
+    }
+    return path;
+  }
+  function  assignFace(y, mat, od) {
+    var lidss = creatHexFace(od)
+    var bottomFace = lidss.build();
+    bottomFace.position.y += y ;
+    bottomFace.material = mat;
+  }
+  function creatHexFace(od) {
+    var Hexface = drawHexFace(od)
+    // earcut script required
+    return new BABYLON.PolygonMeshBuilder("poly", Hexface);
+  }
+  function  Sides(mat, scene ,od, T, B) {
+    var TH = DrawHex(od, T)
+    var BH = DrawHex(od, B)
+    var hex = BABYLON.MeshBuilder.CreateRibbon("t", {pathArray: [TH, BH]}, scene);
+    hex.material = mat;
+  
+  }
+  function DrawHex(od, y) {
+    var path = [];
+    for (var i = 0; i < Math.PI * 2 + Math.PI / 6 ; i += Math.PI * 2 / 6 ) {
+      path.push( createVector3(od, y, od, i) );
+    }
+    return path;
+  }
+  function drawHexFace(od) {
+    var path = [];
+    for (var i = 0; i < Math.PI * 2 + Math.PI / 6 ; i += Math.PI * 2 / 6 ) {
+      path.push(new BABYLON.Vector2(od * Math.sin(i), od * Math.cos(i))) 
+    }
+    return path;
+  }
+  function drawCircle(od, y) {
+    var path = [];
+    for (var i = 0; i < GDims.PieHalfRevs() ; i += helperConst.Clarity()   ) {
+      path.push( createVector3(od, y, od, i) );
+    }
+    return path;
+  }
+  
+  function displ() {  
+        // Add your code here matching the playground format
+        const scene = createScene(); //Call the createScene function
+        // Register a render loop to repeatedly render the scene
+        engine.runRenderLoop(function () {
+                scene.render();
+        });
+        // Watch for browser/canvas resize events
+        window.addEventListener("resize", function () {
+                engine.resize();
+        });
+  }
+    </script>
+   </body>
+</html>
