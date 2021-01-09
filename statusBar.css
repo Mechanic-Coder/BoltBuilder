@@ -116,6 +116,17 @@ font-weight: bold;
 	width: fit-content;
 	padding: .5rem;
   }
+  #overlaytext2{
+	top: 2rem;
+	left: 0;
+	/* left: calc(); */
+	position: absolute;
+	background-color: #ffffff47;;
+	border-radius: 1rem;
+	height: 1.5rem;
+	width: fit-content;
+	padding: .5rem;
+  }
   #overlayleft{
 	top: 50%;
 	left: 0%;
@@ -149,6 +160,7 @@ font-weight: bold;
 		left: calc(100% - 15rem);
 		padding: .5rem;
 	}
+
 
 
   canvas {
