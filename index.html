@@ -12,10 +12,13 @@
 
         <!-- earcut script critcal for PolygonMeshBuilder -->
         <script src="https://unpkg.com/earcut@2.1.1/dist/earcut.min.js"></script>
+        
+        
         <link rel="stylesheet" href="statusBar.css">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
     </head>
    <body>
-    <div id="main">
+    <div id="main" class="teas">
       
       <div id="container">
       <canvas id="renderCanvas" touch-action="none"></canvas> <!-- touch-action="none" for best results from PEP -->
@@ -51,7 +54,8 @@
       
       
       <div id="first">
-        <div id="second " >
+        <div id="second" >
+          <div  id="titleBtnHolder">
           <h1> Bolt Builder </h1>
           <div class="center">
             <button type='button' class="updatebtn" id="Updatebtn">
@@ -62,6 +66,7 @@
               <div>Update Display</div>          
             </button>
           </div>
+        </div>
           <div class="card">
             <div class="mids">
               <div class="mid">
@@ -77,8 +82,10 @@
               </div>
             </div>    
             <div class="btnHolder">              
-              <div id="Matts">
-                <h2> Material Options</h2>  
+              <div id="MattBox">
+                <h2> Material Options</h2> 
+                <div id="Matts"></div>
+                 
               </div>
             </div>        
           <!-- <p id="Str">  </p> -->
