@@ -9,6 +9,7 @@
         <script src="https://cdn.babylonjs.com/loaders/babylonjs.loaders.min.js"></script>
         <script src="https://code.jquery.com/pep/0.4.3/pep.js"></script>
         <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+        <script src="https://preview.babylonjs.com/serializers/babylonjs.serializers.js"></script>
 
         <!-- earcut script critcal for PolygonMeshBuilder -->
         <script src="https://unpkg.com/earcut@2.1.1/dist/earcut.min.js"></script>
@@ -97,7 +98,7 @@
         </div>
         <p id="Str">  </p>
       </div>
-
+      <button id="download"> download </button>
         </div>
       </div>
     </div>
@@ -113,6 +114,7 @@
       const Matts = materials
       const helperConst = new MathConst()
       var DefMat = 0
+      // var scene = null;
       var GDims = new updateGlobal(12, 1, 2, Matts[DefMat].color)
       const canvas = document.getElementById("renderCanvas"); // Get the canvas element
       const engine = new BABYLON.Engine(canvas, true); // Generate the BABYLON 3D engine
@@ -126,7 +128,13 @@
         $('#mat' + i).click(
           changeMatCallback( i )
          )   
-      }    
+      }  
+      $('#download').click(function(){
+        // console.log('hey')
+        download()
+        
+        }) 
+  
       
       $("#major").val(GDims.Gmajor)
       $("#pitch").val(GDims.Gpitch)
@@ -144,6 +152,16 @@
       updateCalcs(DefMat)
       
     });
+    function download() {
+      const scene = displ()
+
+        console.log(scene)
+        BABYLON.GLTF2Export.GLTFAsync(scene, "fileName").then((gltf) => {
+    gltf.downloadFiles();
+
+});
+    }
+
     var curvePoints = ( r, o) => {
       
       // ////// this is wrong the end is proper but the start needs to have the bottom aka e
@@ -460,7 +478,9 @@
         // Watch for browser/canvas resize events
         window.addEventListener("resize", function () {
                 engine.resize();
+        
         });
+        return scene
   }
     </script>
    </body>
