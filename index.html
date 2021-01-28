@@ -97,8 +97,9 @@
             <div id='dec' class="progress-bar-child shrinker timelapse"></div>
         </div>
         <p id="Str">  </p>
+        <button type='button' class="updatebtn" id="download"> Download Bolt</button>
       </div>
-      <button id="download"> download </button>
+     
         </div>
       </div>
     </div>
@@ -154,9 +155,18 @@
     });
     function download() {
       const scene = displ()
-
-        console.log(scene)
-        BABYLON.GLTF2Export.GLTFAsync(scene, "fileName").then((gltf) => {
+        const skybox = scene.meshes.map((M, index)=> {if(M.id == "hdrSkyBox") {
+          return true
+        }
+      return false })
+      console.log(box)
+        for(let b in skybox){
+          if(box[b] === true){
+            scene.meshes[b].dispose()
+          }
+        }
+        console.log(scene.meshes)
+        BABYLON.GLTF2Export.GLTFAsync(scene, "3DNew").then((gltf) => {
     gltf.downloadFiles();
 
 });
