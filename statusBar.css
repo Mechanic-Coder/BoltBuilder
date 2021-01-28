@@ -36,7 +36,7 @@ h1{
 	text-align: center;
 	font-family: impact;
 	font-size: 3rem;
-	margin: 1rem
+	margin: .4rem
 	
 }
 
@@ -111,7 +111,7 @@ font-weight: bold;
   } */
   #overlaytext {
 	top: 2rem;
-	left: calc(100% - 10rem);
+	right: 20px;
 	/* left: calc(); */
 	position: absolute;
 	background-color: #ffffff47;;
@@ -222,6 +222,26 @@ h2{
 	margin-top: .25rem;
 	margin-bottom: .5rem;
 }
+.downBTN {
+	
+}
+.downBTN{
+	font-size: 1.2rem;
+	width: 10rem;
+	height: 2rem;
+	border-radius: .5rem;
+	font-weight: bold;
+	/* background-color: rgba(15, 250, 70, 0.58) */
+	background-image: linear-gradient(#02ed02, rgb(242, 254, 119));
+}
+.downBTN:hover{
+	/* background-image: linear-gradient(rgba(15, 250, 70, 0.58), rgba(243, 254, 118, 0.58)); */
+	background-image: linear-gradient(#02ed02, #02ed02);
+	/* background-color: #fcdf4a */
+}
+.infoBTN{
+	border-radius: .25rem;
+}
 
 button{
 	font-size: 1.25rem;
@@ -254,7 +274,7 @@ p{
 
 #progress-bar-container {
 	width: 80%;
-	height: 60px;
+	height: 40px;
 	margin: 0 auto;
 	/* margin-bottom: 20rem; */
 	position: relative;
@@ -282,6 +302,33 @@ p{
 	/* Chrome10-25,Safari5.1-6 */
 	background: linear-gradient(to right, #c90303 0%, #fdf03a 45%, #02ed02 100%);
 }
+#popUp {
+	padding: 2vw;
+	display: none;
+	text-align: right;
+	font-size: 1rem;;
+	width: 88vw;
+	height: 15rem;
+	border-radius: 2rem;
+	top: 50% ;
+	left: 5%;
+	position: fixed;
+	background-color: white;	
+	border-style: solid;
+	border-color: grey;
+}
+#exitBTN{
+	background-color: grey;
+	border-radius: .5rem;
+}
+#notes{
+	text-align: left;
+}
+li{
+	text-align: left;
+	padding-left: 1.5em;
+	text-indent:-1.5em;
+}
 
 .shrinker {
 	background-color: black;
@@ -299,8 +346,21 @@ p{
 	.teas {
 		flex-direction: row;
 	  }
+	  /* .space{
+		display: flex;
+		flex-direction: row;
+		justify-content: space-between;
+		margin: .1rem;
+		width: 100%; 
+	  }
+	  input{
+		  width: 5rem;
+	  } */
 }
 @media  screen and (max-width: 1000px) {
+	.CPUoNLY {
+		display:none;
+	}
 	.teas {
 		flex-direction: column;
 	  }
@@ -338,6 +398,12 @@ p{
 	  }
 	  input {
 		  width: 20vw
+	  }
+	  #overlayleft{
+		top: 35% ;
+	  }
+	  #overlayRight{
+		top: 35% ;
 	  }
 	  #overlayTop{
 		top: 0% ;
