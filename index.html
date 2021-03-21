@@ -186,9 +186,9 @@
           return true
         }
       return false })
-      console.log(box)
+      console.log(skybox)
         for(let b in skybox){
-          if(box[b] === true){
+          if(skybox[b] === true){
             scene.meshes[b].dispose()
           }
         }
@@ -199,14 +199,14 @@
 });
     }
 
-    var curvePoints = ( r, o) => {
+    var curvePoints = ( r, o, profile) => {
       
       // ////// this is wrong the end is proper but the start needs to have the bottom aka e
       //  fade in rather then the angle and depth fade in 
       // 
       // o is the y offset
       // r is the x off set
-      var k = 0;
+      // var k = 0;
 
       const D = threadGeo(GDims.Gpitch).d
       const startincrement = 1 / 126
@@ -217,6 +217,24 @@
       var increaseX = 0
       var startOffset = 0
       var DecX = D * helperConst.TE()
+      var TwoDecX =  D * helperConst.TE()
+
+      // var Min = GDims.BottomOfThread()
+      // var diff = r
+      // console.log(Min, diff)
+      // console.log(profile.V.X, profile.E.X, r)
+      const radMaj = profile.E.X
+      const radMin = profile.V.X
+      const diff = radMaj - radMin;
+      // clarity 1/ 20
+      const DiffIncre = diff / helperConst.Clarity()
+      var RadIncre = radMin
+      
+      const StartYincre = 1 / 125
+      var startY = 2;
+      const firstY = 2;
+
+      // console.log(DiffIncre * (2 * Math.PI), diff)
 
       for (var i = 0; i < GDims.PieHalfRevs() ; i += helperConst.Clarity()   ) {
         // reset for each itteration
@@ -224,24 +242,55 @@
         var y = 0
         // eases into first thread revolution, bottom
         // const HalfRevs =  2 * tpi * length
-        const firstRev = i < 2 * Math.PI && o < 2;
-        const lastRev =  i > GDims.Highest()  && o > 0;
-        if(firstRev) {
 
+        const firstRev = i < 4 * Math.PI && o <= 2;
+        // const endFirstRev = i > 2 * Math.PI && i < 4 * Math.PI && o == 2;
+        const endFirstRev = i > 2 * Math.PI && i < 4 * Math.PI;
+        // const firstRev = i < 2 * Math.PI && o < 2;
+        const lastRev =  i > GDims.Highest()  && o > 0;
+
+        // console.log(i)
+
+        if (endFirstRev ) {
           switch(o) {
+            case 2:
+            xOffset = r
+            y = (i + o * Math.PI) / pitch
+              break;
             case 1:
-              y = (i + (2 - startOffset) * Math.PI) / pitch 
-              DecX -= (D  / 126) * helperConst.TE()
-              
-              xOffset = r + DecX
-              startOffset += startincrement
+                xOffset = r
+                y = (i + o * Math.PI) / pitch
               break;
             case 0:
-              y = ( 2 * Math.PI) / pitch
+              y = (i + o * Math.PI) / pitch  
+              increaseX += (D * helperConst.TE() / 125)
+              xOffset = RadIncre + increaseX
+              break;
+
+
+            default:
+          }
+          path.push( createVector3(xOffset, y, xOffset, i) );
+        }
+        else if(firstRev) {
+          var modi = i % helperConst.Clarity()
+          switch(o) {
+            case 2:
+              y = (i + o * Math.PI) / pitch  
+              increaseX += (D * helperConst.TE() / 125)
+              xOffset = RadIncre + increaseX
+              break;
+            case 1:
+              y = ((((o / 125) + startY) * Math.PI) / pitch)
+              startY += StartYincre
+              xOffset = r
+              break;
+            case 0:
+              y = (firstY* Math.PI) / pitch  
+              xOffset = radMin
               break;
             default:
           }
-
           path.push( createVector3(xOffset, y, xOffset, i) );
   //  eases out of last thread revolution, top
 } else if(lastRev) {
@@ -263,8 +312,7 @@
         // for top triggers on 0, for bottom triggers on 2
         path.push(createVector3(r, (i + o * Math.PI) / pitch, r, i))
       }
-        // just a counter
-        k++;
+
       }
         return path;
     };
@@ -277,8 +325,9 @@
       var mat = changeColor(scene, GDims.GMat)
      
       createThread(mat, scene)
-      makeDisc(mat, GDims.Rad() * .9, GDims.BottomOfChamfer() , helperConst.RotTop())
+      
       makeDisc(mat, GDims.Rad() , GDims.TopOfThread(), helperConst.RotTop())
+      makeDisc(mat, GDims.GMin() * .9, GDims.BottomOfChamfer() , helperConst.RotTop())
       BottomChamfer(mat, scene)
       createHead(mat, scene)
 
@@ -383,9 +432,9 @@
   function createThread(mat, scene) {
     const profile = createProfile(GDims.Gpitch, GDims.GMAJ(), GDims.Glength)
 
-    var curve1 = curvePoints(profile.S.X, 0);
-    var curve2 = curvePoints(profile.V.X, 1);
-    var curve3 = curvePoints(profile.E.X, 2);
+    var curve1 = curvePoints(profile.S.X, 0, profile);
+    var curve2 = curvePoints(profile.V.X, 1, profile);
+    var curve3 = curvePoints(profile.E.X, 2, profile);
     
     var thread = BABYLON.MeshBuilder.CreateRibbon("t", {
       pathArray: [curve1, curve2, curve3]}, scene);
@@ -394,8 +443,8 @@
   function BottomChamfer(mat, scene) {
     // i would like to make thread cut into chamfer perhaps
     // do a three point ribbon and only alter the middle one one thread makes contacts
-    const top = GDims.Rad();
-    const bottom = GDims.Rad() * .9;
+    const top = GDims.GMin();
+    const bottom = GDims.GMin() * .9;
     var topPoints = drawCircle(top,  GDims.BottomOfThread())
     var bottomPoints = drawCircle(bottom,  GDims.BottomOfChamfer())
     var chamfer = BABYLON.MeshBuilder.CreateRibbon("t", {pathArray: 

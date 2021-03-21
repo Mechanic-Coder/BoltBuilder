@@ -8,6 +8,15 @@ export function updateGlobal(pitch, major, length, mat) {
         // return this.Gmajor
         return this.Gmajor * 4
     }
+    this.GMin = () => {
+        var math = new MathConst()
+        const Angle = 30;
+        const P = 1 / this.Gpitch;
+        const pieHalf = (Math.PI/180)
+        const d = P * Math.cos((Angle*pieHalf));
+        // let diff = 1 / this.Gpitch 
+        return (this.Gmajor * 2) - d * math.TE() 
+    }
 
     this.AllG = () => {
         return {Glength: this.Glength, Gpitch: this.Gpitch, Gmajor: this.GMAJ()() }
