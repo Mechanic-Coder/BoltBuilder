@@ -2,14 +2,9 @@ export function initScene(engine, canvas) {
     var scene = new BABYLON.Scene(engine);
     //first Math.PI/5.3
     //second Math.PI/1.8
-<<<<<<< HEAD
-    var camera = new BABYLON.ArcRotateCamera("camera", Math.PI/5.3, Math.PI/3, 75, new BABYLON.Vector3(0, 10, 0), scene);
-    // var camera = new BABYLON.ArcRotateCamera("camera", Math.PI/5.3, Math.PI/2, 10, new BABYLON.Vector3(0, 0, 0), scene);
-=======
-    var origin = new BABYLON.Vector3(0, 10, 0) 
-    // var camera = new BABYLON.ArcRotateCamera("camera", Math.PI/5.3, Math.PI/3, 75, origin, scene);
-    var camera = new BABYLON.ArcRotateCamera("camera", Math.PI/5.3, Math.PI/2, 10, new BABYLON.Vector3(0, 0, 0), scene);
->>>>>>> abstractionThread
+    var origin = new BABYLON.Vector3(0, 10, 0); 
+    var camera = new BABYLON.ArcRotateCamera("camera", Math.PI/5.3, Math.PI/3, 50, origin, scene);
+    // var camera = new BABYLON.ArcRotateCamera("camera", Math.PI/5.3, Math.PI/2, 10, origin, scene);
     
     camera.attachControl(canvas, true);
 
