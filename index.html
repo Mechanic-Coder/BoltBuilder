@@ -128,11 +128,14 @@
       import { initScene, changeColor } from "./babylonBoiler.js"
       import { updateGlobal, MathConst } from "./globalClass.js"
       import { materials, BoltEQ } from "./engineCalc.js"
+      import { UniThread, createVector3 } from "./threadGen.js"
+      
       const Matts = materials
       const helperConst = new MathConst()
       var DefMat = 0
       // var scene = null;
       var GDims = new updateGlobal(12, 1, 2, Matts[DefMat].color)
+      console.log(GDims, "base")
       const canvas = document.getElementById("renderCanvas"); // Get the canvas element
       const engine = new BABYLON.Engine(canvas, true); // Generate the BABYLON 3D engine
       // var topics = Matts
@@ -140,8 +143,7 @@
     $(document).ready(function(){
       $('#exitBTN').click(function(){
         // console.log('hey')
-        $("#popUp").css("display", "none");
-        
+        $("#popUp").css("display", "none"); 
         }) 
         
         $('#info').click(function(){
@@ -162,8 +164,7 @@
         download()
         
         }) 
-  
-      
+
       $("#major").val(GDims.Gmajor)
       $("#pitch").val(GDims.Gpitch)
       $("#length").val(GDims.Glength)
@@ -199,123 +200,7 @@
 });
     }
 
-    var curvePoints = ( r, o, profile) => {
-      
-      // ////// this is wrong the end is proper but the start needs to have the bottom aka e
-      //  fade in rather then the angle and depth fade in 
-      // 
-      // o is the y offset
-      // r is the x off set
-      // var k = 0;
 
-      const D = threadGeo(GDims.Gpitch).d
-      const startincrement = 1 / 126
-      const pitch = GDims.Gpitch 
-      
-      var path = [];
-      var highY = 0
-      var increaseX = 0
-      var startOffset = 0
-      var DecX = D * helperConst.TE()
-      var TwoDecX =  D * helperConst.TE()
-
-      // var Min = GDims.BottomOfThread()
-      // var diff = r
-      // console.log(Min, diff)
-      // console.log(profile.V.X, profile.E.X, r)
-      const radMaj = profile.E.X
-      const radMin = profile.V.X
-      const diff = radMaj - radMin;
-      // clarity 1/ 20
-      const DiffIncre = diff / helperConst.Clarity()
-      var RadIncre = radMin
-      
-      const StartYincre = 1 / 125
-      var startY = 2;
-      const firstY = 2;
-
-      // console.log(DiffIncre * (2 * Math.PI), diff)
-
-      for (var i = 0; i < GDims.PieHalfRevs() ; i += helperConst.Clarity()   ) {
-        // reset for each itteration
-        var xOffset = r
-        var y = 0
-        // eases into first thread revolution, bottom
-        // const HalfRevs =  2 * tpi * length
-
-        const firstRev = i < 4 * Math.PI && o <= 2;
-        // const endFirstRev = i > 2 * Math.PI && i < 4 * Math.PI && o == 2;
-        const endFirstRev = i > 2 * Math.PI && i < 4 * Math.PI;
-        // const firstRev = i < 2 * Math.PI && o < 2;
-        const lastRev =  i > GDims.Highest()  && o > 0;
-
-        // console.log(i)
-
-        if (endFirstRev ) {
-          switch(o) {
-            case 2:
-            xOffset = r
-            y = (i + o * Math.PI) / pitch
-              break;
-            case 1:
-                xOffset = r
-                y = (i + o * Math.PI) / pitch
-              break;
-            case 0:
-              y = (i + o * Math.PI) / pitch  
-              increaseX += (D * helperConst.TE() / 125)
-              xOffset = RadIncre + increaseX
-              break;
-
-
-            default:
-          }
-          path.push( createVector3(xOffset, y, xOffset, i) );
-        }
-        else if(firstRev) {
-          var modi = i % helperConst.Clarity()
-          switch(o) {
-            case 2:
-              y = (i + o * Math.PI) / pitch  
-              increaseX += (D * helperConst.TE() / 125)
-              xOffset = RadIncre + increaseX
-              break;
-            case 1:
-              y = ((((o / 125) + startY) * Math.PI) / pitch)
-              startY += StartYincre
-              xOffset = r
-              break;
-            case 0:
-              y = (firstY* Math.PI) / pitch  
-              xOffset = radMin
-              break;
-            default:
-          }
-          path.push( createVector3(xOffset, y, xOffset, i) );
-  //  eases out of last thread revolution, top
-} else if(lastRev) {
-          switch(o) {
-          case 1:
-            highY += 1 / 125
-            //!  D * 4 is because i exgerated the pitch in the V.X cordinate by 4
-            increaseX += (D * helperConst.TE() / 125)
-            y = ((GDims.Highest() + (o + highY) * Math.PI) / pitch)
-            xOffset = r + increaseX
-            break;
-          case 2:
-            y = ((GDims.Highest() + o * Math.PI) / pitch)
-            break;
-          default:
-          }
-          path.push(createVector3(xOffset, y, xOffset, i))
-      } else {
-        // for top triggers on 0, for bottom triggers on 2
-        path.push(createVector3(r, (i + o * Math.PI) / pitch, r, i))
-      }
-
-      }
-        return path;
-    };
     var createScene = () => {
 
       // 1 change
@@ -323,13 +208,12 @@
       
       var scene = AllScene.scene
       var mat = changeColor(scene, GDims.GMat)
-     
-      createThread(mat, scene)
       
       makeDisc(mat, GDims.Rad() , GDims.TopOfThread(), helperConst.RotTop())
       makeDisc(mat, GDims.GMin() * .9, GDims.BottomOfChamfer() , helperConst.RotTop())
       BottomChamfer(mat, scene)
       createHead(mat, scene)
+      createThread(mat, scene)
 
       return scene;
       };
@@ -401,49 +285,15 @@
       }
     }
 
-    function threadGeo(TPI) {
-        const Angle = 30;
-        const P = 1 / TPI;
-        const pieHalf = (Math.PI/180)
-        const d = P * Math.cos((Angle*pieHalf));
-        return {P:P, d:d}
-      }
-    function createProfile(TPI, Major, length) {
-
-      const thread = threadGeo(TPI)
-
-      var a = thread.P/2;
-      // X: S.X - d * 4 is just to pronounce threads normaly it would just be X: S.X - d
-      var S = {X:Major/2,
-              Y: 0}
-      var V = {X: S.X - thread.d * helperConst.TE(), 
-              Y: S.Y + a }
-      var E = {X: S.X, 
-              Y:  S.Y + thread.P }
-    return { S, V, E, length, TPI }
-    }
-
-
-    function createVector3(x, y, z, i) {
-      return new BABYLON.Vector3(x * Math.sin(i), y, z * Math.cos(i))
-    }
-
-
   function createThread(mat, scene) {
-    const profile = createProfile(GDims.Gpitch, GDims.GMAJ(), GDims.Glength)
-
-    var curve1 = curvePoints(profile.S.X, 0, profile);
-    var curve2 = curvePoints(profile.V.X, 1, profile);
-    var curve3 = curvePoints(profile.E.X, 2, profile);
-    
     var thread = BABYLON.MeshBuilder.CreateRibbon("t", {
-      pathArray: [curve1, curve2, curve3]}, scene);
+        pathArray: UniThread(GDims.Gpitch, GDims.Gmajor, GDims.Glength)}
+        , scene);
     thread.material = mat;
   }
   function BottomChamfer(mat, scene) {
-    // i would like to make thread cut into chamfer perhaps
-    // do a three point ribbon and only alter the middle one one thread makes contacts
     const top = GDims.GMin();
+    console.log(GDims.GMin())
     const bottom = GDims.GMin() * .9;
     var topPoints = drawCircle(top,  GDims.BottomOfThread())
     var bottomPoints = drawCircle(bottom,  GDims.BottomOfChamfer())
@@ -490,7 +340,7 @@
     var path = [];
     var r = od ;
     // y = 40
-    // keep below woked
+    // keep below worked
     // const top = Math.sqrt(3)*r 
     // const bot = Math.sqrt(3)*Math.cos(t) + Math.sin(t)
     // const d = top / bot
@@ -555,9 +405,7 @@
   }
   
   function displ() {  
-        // Add your code here matching the playground format
-        const scene = createScene(); //Call the createScene function
-        // Register a render loop to repeatedly render the scene
+        const scene = createScene(); 
         engine.runRenderLoop(function () {
                 scene.render();
         });
