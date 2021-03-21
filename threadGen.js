@@ -8,45 +8,48 @@ export function UniThread(Pitch, Major, Length) {
     
     
     console.log('your mom')
-    var curvePoints = ( r, o, profile) => {
+    // var d = new Date();
+    
+    var curvePoints = (o, profile) => {
         // o is the y offset
         // r is the x off set
-    
+        var r = profile.X[o]
+
         const D = threadGeo(GDims.Gpitch).d
         const pitch = GDims.Gpitch 
         
         var path = [];
         var highY = 0
         var increaseX = 0
-        const radMin = profile.V.X
+        const radMin = profile.X[1]
         var RadIncre = radMin
         const YStep = 1 / 125
         var startY = 2;
         const firstY = 2;
         const radStep = (D * helperConst.TE() / 125);
-    
+        const PI =  Math.PI 
+        function stanY(E){
+            return((E + o * PI) / pitch)
+        }
+        var firstRev = (R, o) => R < 4 * PI && o <= 2;
+        var SecondRev = (R) => R > 2 * PI && R < 4 * PI;
+        var lastRev = (R, o) => R > GDims.Highest()  && o > 0;
+
         for (var i = 0; i < GDims.PieHalfRevs() ; i += helperConst.Clarity()   ) {
           // reset for each itteration
           var xOffset = r
           var y = 0
-          const firstRev = i < 4 * Math.PI && o <= 2;
-          const SecondRev = i > 2 * Math.PI && i < 4 * Math.PI;
-          const lastRev =  i > GDims.Highest()  && o > 0;
-    
-          if (SecondRev ) {
+          if (SecondRev(i) ) {
+            // SecondRev.O[o]()
             switch(o) {
                 // below is call fall-through
                 case 1:
                 case 2:
                 xOffset = r
-                y = (i + o * Math.PI) / pitch
+                y = stanY(i)
                 break;
-            //   case 1:
-            //       xOffset = r
-            //       y = (i + o * Math.PI) / pitch
-            //     break;
               case 0:
-                y = (i + o * Math.PI) / pitch  
+                y = stanY(i) 
                 increaseX += radStep
                 xOffset = RadIncre + increaseX
                 break;
@@ -56,77 +59,74 @@ export function UniThread(Pitch, Major, Length) {
             }
             path.push( createVector3(xOffset, y, xOffset, i) );
           }
-          else if(firstRev) {
+         else if(firstRev(i, o)) {
             switch(o) {
               case 2:
-                y = (i + o * Math.PI) / pitch  
+                y = stanY(i) 
                 increaseX += radStep
                 xOffset = RadIncre + increaseX
                 break;
               case 1:
-                y = ((((o / 125) + startY) * Math.PI) / pitch)
+                y = ((((o / 125) + startY) * PI) / pitch)
                 startY += YStep
                 xOffset = r
                 break;
               case 0:
-                y = (firstY* Math.PI) / pitch  
+                y = (firstY* PI) / pitch  
                 xOffset = radMin
                 break;
               default:
             }
             path.push( createVector3(xOffset, y, xOffset, i) );
-    //  eases out of last thread revolution, top
-    } else if(lastRev) {
+        //  eases out of last thread revolution, top
+        } else if(lastRev(i, o)) {
             switch(o) {
             case 1:
               highY += YStep
               //!  D * 4 is because i exgerated the pitch in the V.X cordinate by 4
               increaseX += radStep
-              y = ((GDims.Highest() + (o + highY) * Math.PI) / pitch)
+              y = ((GDims.Highest() + (o + highY) * PI) / pitch)
               xOffset = r + increaseX
               break;
             case 2:
-              y = ((GDims.Highest() + o * Math.PI) / pitch)
+              y = ((GDims.Highest() + o * PI) / pitch)
               break;
             default:
             }
             path.push(createVector3(xOffset, y, xOffset, i))
         } else {
           // for top triggers on 0, for bottom triggers on 2
-          path.push(createVector3(r, (i + o * Math.PI) / pitch, r, i))
+          path.push(createVector3(r, (i + o * PI) / pitch, r, i))
         }
     
         }
           return path;
       };
-      console.log(Major)
+      
+      
     var GDims = new updateGlobal(Pitch, Major, Length, 'red')
     console.log(GDims.GMAJ())
-    const profile = createProfile(GDims.Gpitch, GDims.GMAJ(), GDims.Glength)
-    var curve1 = curvePoints(profile.S.X, 0, profile);
-    var curve2 = curvePoints(profile.V.X, 1, profile);
-    var curve3 = curvePoints(profile.E.X, 2, profile);
+    const profile = createProfile(GDims.Gpitch, GDims.GMAJ())
 
-    console.log(GDims.GMin())
+    var f = performance.now();
+    var curve1 = curvePoints(0, profile);
+    var curve2 = curvePoints(1, profile);
+    var curve3 = curvePoints(2, profile);
+    // took between 7 and 17 milli seconds originaly with cases and ifs
+    var l = performance.now();
+    console.log( l - f, "milli seconds")
     return [curve1, curve2, curve3];
 
 }
-export function createProfile(TPI, Major, length) {
-
+export function createProfile(TPI, Major) {
     const thread = threadGeo(TPI)
-
-    var a = thread.P/2;
     // X: S.X - d * 4 is just to pronounce threads normaly it would just be X: S.X - d
     // s and E are the top of thread V is root
-    // refacter profile elimante y 
-    var S = {X:Major/2,
-        Y: 0}
-    var V = {X: S.X - thread.d * helperConst.TE(), 
-        Y: S.Y + a }
-    var E = {X: S.X, 
-        Y:  S.Y + thread.P }
-        console.log( Major)
-    return { S, V, E, length, TPI }
+    const S = Major/2
+    const V = S - thread.d * helperConst.TE()
+    const E = S
+    const X = [S, V, E]
+    return {X, TPI }
     }
 
     
